@@ -4,11 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Inomarka Hayda</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="icon" href="assets/avatar.jpg">
+<link rel="preload" href="assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/unbounded-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script async src="https://telegram.org/js/telegram-web-app.js" onload="window.__tg&&window.__tg()"></script>
 <style>
+@font-face{font-family:"Manrope";src:url(assets/fonts/manrope-latin.woff2) format("woff2");font-weight:500 800;font-display:swap}
+@font-face{font-family:"Unbounded";src:url(assets/fonts/unbounded-latin.woff2) format("woff2");font-weight:700 800;font-display:swap}
 :root{
   --bg:#0b0b0d; --bg2:#111115; --card:#16161b; --card2:#1d1d23; --card3:#26262e;
   --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13);
@@ -231,7 +233,8 @@ h3{font-size:15px;font-weight:800;letter-spacing:-.005em}
 .list{display:grid;gap:2px;margin-top:8px}
 .li{display:flex;align-items:center;gap:12px;padding:10px 2px;border-bottom:1px solid var(--line);text-align:left;width:100%}
 .li:last-child{border-bottom:0}
-.li .ph{width:44px;height:44px;border-radius:50%;background:#222 center/cover;flex:none;display:grid;place-items:center;font-weight:800;color:var(--muted);font-size:15px}
+.li .ph{width:44px;height:44px;border-radius:50%;background:#222 center/cover;flex:none;display:grid;place-items:center;font-weight:800;color:var(--muted);font-size:15px;overflow:hidden}
+.li .ph img{width:100%;height:100%;object-fit:cover}
 .li b{display:block;font-size:13.5px;line-height:1.3;text-transform:uppercase}
 .li span{font-size:12px;color:var(--muted)}
 .li .r{margin-left:auto;text-align:right;white-space:nowrap}
@@ -290,13 +293,13 @@ h3{font-size:15px;font-weight:800;letter-spacing:-.005em}
 <div class="sheet" id="sheet"><div class="grab"></div><div id="sheetBody"></div></div>
 <div class="toast" id="toast"><i></i><span></span></div>
 
-<script src="data.js"></script>
+<script src="core.js"></script>
 <script>
 (() => {
 "use strict";
 const D = window.IH;
-const tg = window.Telegram?.WebApp;
-const inTG = !!(tg && tg.initData);
+// скрипт Telegram грузится асинхронно: первый экран рисуется, не дожидаясь его
+let tg = null, inTG = false;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -308,17 +311,36 @@ const MS = ["yan","fev","mar","apr","may","iyn","iyl","avg","sen","okt","noy","d
 const WD = ["Yak","Du","Se","Chor","Pay","Ju","Sha"];
 const dUz = (d, y) => { const [Y, M, DD] = d.split("-").map(Number); return `${DD}-${MON[M - 1]}${y ? " " + Y : ""}`; };
 const post = m => `https://t.me/inomarkahayda/${m}`;
-const thumb = id => `assets/cars/${id}.jpg`;
+const thumb = id => `assets/s/${id}.jpg`;
+const poster = id => `assets/cars/${id}.jpg`;
+
+/* поиск и история телефонов: idx.js (~50 КБ) нужен не на первом экране — грузим после него */
+let X = null, xP = null;
+function loadIdx() {
+  return xP ??= new Promise((res, rej) => {
+    const sc = document.createElement("script"); sc.src = "idx.js";
+    sc.onload = () => {
+      const R = window.IHX;
+      const rows = R.rows.map(r => ({ id: r[0], m: r[0] - r[1], t: r[2], d: `20${r[3].slice(0, 2)}-${r[3].slice(2, 4)}-${r[3].slice(4)}`, s: r[4], v: r[5] * 100, b: r[6] >= 0 ? R.B[r[6]] : "", th: r[7] }));
+      X = { rows, phones: R.phones, byId: Object.fromEntries(rows.map(r => [r.id, r])) }; res(X);
+    };
+    sc.onerror = () => { xP = null; rej(new Error("idx")); };
+    document.head.appendChild(sc);
+  });
+}
 const S = D.stats;
 
 /* ---------- Telegram ---------- */
-const v = x => { try { return tg && tg.isVersionAtLeast(x); } catch (e) { return false; } };
-if (tg) {
+const v = x => { try { return !!tg && tg.isVersionAtLeast(x); } catch (e) { return false; } };
+function initTG() {
+  if (tg || !window.Telegram?.WebApp) return;
+  tg = window.Telegram.WebApp; inTG = !!tg.initData;
   try { tg.ready(); tg.expand(); } catch (e) {}
-  if (v("6.1")) { tg.setHeaderColor("#0b0b0d"); tg.setBackgroundColor("#0b0b0d"); }
+  if (v("6.1")) { tg.setHeaderColor("#0b0b0d"); tg.setBackgroundColor("#0b0b0d"); tg.BackButton.onClick(() => backFn && backFn()); if (backFn) tg.BackButton.show(); }
   if (v("7.10")) try { tg.setBottomBarColor("#0d0d10"); } catch (e) {}
   if (v("7.7")) try { tg.disableVerticalSwipes(); } catch (e) {}
 }
+window.__tg = initTG;
 const hap = (k = "light") => { if (v("6.1")) try { k === "ok" ? tg.HapticFeedback.notificationOccurred("success") : k === "sel" ? tg.HapticFeedback.selectionChanged() : tg.HapticFeedback.impactOccurred(k); } catch (e) {} };
 const openLink = u => { hap(); if (inTG && /^https:\/\/t\.me\//.test(u)) tg.openTelegramLink(u); else window.open(u, "_blank", "noopener"); };
 let backFn = null;
@@ -327,7 +349,6 @@ function setBack(fn) {
   if (!tg || !v("6.1")) return;
   try { fn ? tg.BackButton.show() : tg.BackButton.hide(); } catch (e) {}
 }
-if (tg && v("6.1")) tg.BackButton.onClick(() => backFn && backFn());
 
 /* ---------- ui helpers ---------- */
 let toastT;
@@ -533,13 +554,13 @@ async function hash(p) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("ih-demo-2026" + p));
   return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("").slice(0, 14);
 }
-const byIdx = Object.fromEntries(D.idx.map(r => [r[0], r]));
 async function showHist() {
-  const ids = window.crypto?.subtle ? (D.phones[await hash(W.phone)] || []) : [];
+  const X = await loadIdx().catch(() => null);
+  const ids = X && window.crypto?.subtle ? (X.phones[await hash(W.phone)] || []) : [];
   W.hist = ids.length;
-  const rows = ids.map(i => byIdx[i]).filter(Boolean).slice(0, 5);
+  const rows = ids.map(i => X.byId[i]).filter(Boolean).slice(0, 5);
   $("#histBox").innerHTML = ids.length ? `<div class="hist"><b>🔁 Bu raqam bilan kanalda ${ids.length} ta e’lon chiqqan</b>
-      <ul>${rows.map(r => `<li>${esc(r[2])}<span>${dUz(r[3])}${r[4] ? " · 🤝" : ""}</span></li>`).join("")}</ul></div>
+      <ul>${rows.map(r => `<li>${esc(r.t)}<span>${dUz(r.d)}${r.s ? " · 🤝" : ""}</span></li>`).join("")}</ul></div>
     <div class="lbl">Jamoangiz shu paytda ko‘radi</div>${tgmsg("Inomarka · Buyurtmalar", `🔁 <b>Doimiy mijoz</b> — ${ids.length} ta e’lon\n➡️ Diler paketini taklif qilish mumkin`)}
     ${tipH("Hozir buni hech kim eslab qolmaydi. Bot har bir raqamning tarixini darhol ko‘rsatadi.")}`
     : `<div class="newc">✅ <b>Yangi mijoz</b> — bu raqam kanalda hali chiqmagan.</div>${tipH(`Bot har bir yangi buyurtmani kanaldagi ${num(S.posts)} ta post bilan solishtiradi.`)}`;
@@ -579,14 +600,15 @@ function renderDone() {
     </div>`;
   W.no++;
   const tl = $("#tl");
-  tl.onclick = e => {
-    const b = e.target.closest(".ff"); if (!b) return; hap("medium");
+  tl.onclick = async e => {
+    const b = e.target.closest(".ff"); if (!b || b.disabled) return; hap("medium");
     const f = b.dataset.f; let html = "";
     if (f === "rem") html = `<div class="notif"><div class="top"><i></i>Inomarka Hayda · hozir</div><b>⏰ Ertaga ${esc(W.time)} da suratga olish</b><p>📍 Shota Rustaveli 12 · 🧽 Mashinani yuvib keling — videoda yaxshiroq ko‘rinadi</p></div>${tipH("Eslatma o‘zi ketadi — admin hech kimga qo‘ng‘iroq qilmaydi.")}`;
     if (f === "pub") {
       const k = (W.model || "").replace(/[^A-Z0-9]/gi, "").toUpperCase();
-      const r = D.idx.find(x => x[7] && x[2].toUpperCase().replace(/[^A-Z0-9]/g, "").includes(k)) || D.idx.find(x => x[7] && x[6] === W.brand) || D.idx.find(x => x[7]);
-      html = `<div class="notif"><div class="top"><i></i>Inomarka Hayda · hozir</div><div class="row" style="margin-top:8px"><div style="width:64px;height:64px;border-radius:50%;background:url(${thumb(r[0])}) center/cover;flex:none"></div><div><b style="margin-top:0">📢 Videongiz chiqdi!</b><p><a href="#" data-link="${post(r[1])}">Telegram kanalda ko‘rish →</a></p></div></div><p style="font-size:12px;color:var(--muted);margin-top:8px">Demo: havola kanalingizdagi o‘xshash mashinaning haqiqiy postiga olib boradi — ${esc(r[2])}</p></div>${tipH("Bot kanaldagi postni telefon raqami bo‘yicha o‘zi topadi va sotuvchiga yuboradi.")}`;
+      const R = (await loadIdx().catch(() => ({ rows: [] }))).rows.filter(x => x.th);
+      const r = R.find(x => norm(x.t).includes(k)) || R.find(x => x.b === W.brand) || R[0] || { id: D.hall[0].id, m: D.hall[0].m, t: D.hall[0].t };
+      html = `<div class="notif"><div class="top"><i></i>Inomarka Hayda · hozir</div><div class="row" style="margin-top:8px"><div style="width:64px;height:64px;border-radius:50%;background:url(${thumb(r.id)}) center/cover;flex:none"></div><div><b style="margin-top:0">📢 Videongiz chiqdi!</b><p><a href="#" data-link="${post(r.m)}">Telegram kanalda ko‘rish →</a></p></div></div><p style="font-size:12px;color:var(--muted);margin-top:8px">Demo: havola kanalingizdagi o‘xshash mashinaning haqiqiy postiga olib boradi — ${esc(r.t)}</p></div>${tipH("Bot kanaldagi postni telefon raqami bo‘yicha o‘zi topadi va sotuvchiga yuboradi.")}`;
     }
     if (f === "sold") { html = `<div class="notif"><div class="top"><i></i>Inomarka Hayda · hozir</div><b>🤝 Baraka bo‘ldi! Tabriklaymiz!</b><p>Kanal va Instagramdagi post avtomatik «BARAKA BO‘LDI» ga o‘zgardi. Xizmatni baholang:</p><div class="stars">${[1, 2, 3, 4, 5].map(i => `<button data-st="${i}">⭐️</button>`).join("")}</div></div>${tipH(`Hozir buni qo‘lda qilasiz — ${num(S.edited)} ta tahrir. Bot bilan — bitta tugma.`)}<div class="next"><button class="btn btn-line" data-go="own">Keyingi: zaldagi mashina egasi →</button></div>`; confetti(); hap("ok"); }
     b.insertAdjacentHTML("afterend", `<div>${html}</div>`); b.disabled = true;
@@ -620,7 +642,7 @@ function renderOwn() {
     <p class="sub">Har dushanba bot o‘zi hisobot yuboradi. Mashinani tanlang — modellar va narxlar saytingizdan.</p>
     <div class="carousel">${D.hall.map((x, i) => `<button class="cc${i === O.i ? " on" : ""}" data-c="${i}"><div class="ph" style="background-image:url(${thumb(x.id)})"></div><b>${esc(x.t.replace("MERCEDES-AMG ", "AMG ").replace("RANGE ROVER ", "RR "))}</b><span>${money(O.price[i] ?? x.price)}</span></button>`).join("")}</div>
     <div class="rep">
-      <div class="vbox"><div class="disc"><video src="assets/video/${h.id}.mp4" poster="${thumb(h.id)}" muted loop playsinline autoplay></video></div>
+      <div class="vbox"><div class="disc"><video src="assets/video/${h.id}.mp4" poster="${poster(h.id)}" muted loop playsinline autoplay></video></div>
         <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="47" stroke="rgba(255,255,255,.1)"/><circle id="ring" cx="50" cy="50" r="47" stroke="var(--red)" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100"/></svg></div>
       <div class="in">
         <div class="eb" style="text-align:center">📊 Haftalik hisobot</div>
@@ -726,7 +748,7 @@ let Q = "";
 function renderFind() {
   $("#v-find").innerHTML = `<div class="eb" style="margin-top:14px">Mashina tarixi</div>
     <h2 style="margin-top:6px">Bu model qanchalik tez sotiladi?</h2>
-    <p class="sub">Kanalingizdagi ${num(D.idx.length)} ta e’londan qidiradi</p>
+    <p class="sub">Kanalingizdagi ${num(D.nIdx)} ta e’londan qidiradi</p>
     <div class="sbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="G63, LX570, Zeekr, Prado…" value="${esc(Q)}" autocomplete="off" enterkeyhint="search"></div>
     <div class="chips">${["G63", "LX 570", "Zeekr", "Prado", "X5", "GLE", "Li 9", "Gentra"].map(s => `<button class="chip" data-q="${s}">${s}</button>`).join("")}</div>
     <div id="res"></div>`;
@@ -736,20 +758,21 @@ function renderFind() {
   if (Q) run();
 }
 const norm = s => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
-function findRun(q) {
+async function findRun(q) {
   Q = q; const k = norm(q), R = $("#res");
   if (k.length < 2) { R.innerHTML = ""; return; }
-  const res = D.idx.filter(r => norm(r[2]).includes(k));
+  if (!X) { R.innerHTML = `<div class="spin"></div>`; await loadIdx().catch(() => { R.innerHTML = `<div class="empty">Internet aloqasini tekshiring</div>`; }); if (!X || Q !== q) return; }
+  const res = X.rows.filter(r => norm(r.t).includes(k));
   if (!res.length) { R.innerHTML = `<div class="empty">«${esc(q)}» bo‘yicha e’lon topilmadi.<br>Masalan: GLE, X5, Prado</div>`; return; }
-  const sold = res.filter(r => r[4]).length, vs = res.map(r => r[5]).sort((a, b) => a - b), med = vs[Math.floor(vs.length / 2)];
+  const sold = res.filter(r => r.s).length, vs = res.map(r => r.v).sort((a, b) => a - b), med = vs[Math.floor(vs.length / 2)];
   const months = D.stats.months.map(m => m.m);
-  const per = months.map(m => ({ m, n: res.filter(r => r[3].startsWith(m)).length }));
+  const per = months.map(m => ({ m, n: res.filter(r => r.d.startsWith(m)).length }));
   R.innerHTML = `<div class="sstats">
       <div class="kpi"><b>${res.length}</b><span>e’lon</span></div>
       <div class="kpi"><b>${Math.round(sold / res.length * 100)}%</b><span>«Baraka bo‘ldi»</span></div>
       <div class="kpi"><b>${compact(med)}</b><span>o‘rtacha ko‘rish</span></div></div>
     <div class="card"><h3>Oylar bo‘yicha</h3><div id="chQ"></div></div>
-    <div class="card"><h3>So‘nggi e’lonlar</h3><div class="list">${res.slice(0, 25).map(r => `<button class="li" data-link="${post(r[1])}"><div class="ph" style="${r[7] ? `background-image:url(${thumb(r[0])})` : ""}">${r[7] ? "" : esc((r[6] || r[2])[0] || "•")}</div><div><b>${esc(r[2])}</b><span>${dUz(r[3], 1)} · 👁 ${compact(r[5])}</span></div><div class="r">${r[4] ? `<span class="sold">🤝 sotildi</span>` : ""}</div></button>`).join("")}</div>
+    <div class="card"><h3>So‘nggi e’lonlar</h3><div class="list">${res.slice(0, 25).map(r => `<button class="li" data-link="${post(r.m)}"><div class="ph">${r.th ? `<img src="${thumb(r.id)}" alt="" loading="lazy" decoding="async">` : esc((r.b || r.t)[0] || "•")}</div><div><b>${esc(r.t)}</b><span>${dUz(r.d, 1)} · 👁 ${compact(r.v)}</span></div><div class="r">${r.s ? `<span class="sold">🤝 sotildi</span>` : ""}</div></button>`).join("")}</div>
       ${res.length > 25 ? `<p class="sub" style="text-align:center;margin-top:8px">… va yana ${res.length - 25} ta</p>` : ""}</div>
     ${tipH("Yangi mashina kelganda bot shu tarixni o‘zi ko‘rsatadi: model qanchalik tez sotiladi, kim avval sotgan.")}`;
   bars($("#chQ"), per.map((p, i) => { const [y, m] = p.m.split("-").map(Number); return { v: p.n, lab: m === 1 || i === 0 ? MS[m - 1] + " " + String(y).slice(2) : i === per.length - 1 ? MS[m - 1] : "", tip: `${MON[m - 1]} ${y}: ${p.n} ta` }; }), { h: 90 });
@@ -757,6 +780,9 @@ function findRun(q) {
 }
 
 go("home");
+initTG();
+// после первого экрана — подгрузить поиск, чтобы он открывался мгновенно
+(window.requestIdleCallback || (f => setTimeout(f, 1200)))(() => loadIdx().catch(() => {}));
 })();
 </script>
 </body>
