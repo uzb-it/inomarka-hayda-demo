@@ -14,7 +14,7 @@
 :root{
   --bg:#0b0b0d; --bg2:#111115; --card:#16161b; --card2:#1d1d23; --card3:#26262e;
   --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13);
-  --text:#f4f4f5; --text2:#c6c6cd; --muted:#8e8e98; --dim:#5f5f69;
+  --text:#f4f4f5; --text2:#c6c6cd; --muted:#8e8e98; --dim:#80808a;
   --red:#e3262f; --red2:#ff4b3e; --redbg:rgba(227,38,47,.13);
   --good:#0ca30c; --warn:#fab219; --crit:#d03b3b;
   --data:#3987e5; --track:rgba(57,135,229,.15);
@@ -33,7 +33,8 @@ img,video{display:block}
 /* header */
 .hd{display:flex;align-items:center;gap:12px;padding:16px 0 6px}
 .ava{width:42px;height:42px;border-radius:50%;background:url(assets/avatar.jpg) center/cover;box-shadow:0 0 0 2px var(--red),0 0 0 4px var(--bg);flex:none}
-.hd b{display:block;font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:.03em}
+.hd b{display:block;font-family:var(--display);font-weight:800;font-size:15px;letter-spacing:.03em;white-space:nowrap}
+.hd>div{min-width:0}
 .hd b em{font-style:normal;color:var(--red)}
 .hd span{font-size:12.5px;color:var(--muted)}
 .tag{margin-left:auto;font-size:11px;font-weight:800;color:#ffd27a;background:rgba(250,178,25,.1);border:1px solid rgba(250,178,25,.25);padding:4px 9px;border-radius:99px;white-space:nowrap}
@@ -100,6 +101,7 @@ h3{font-size:15px;font-weight:800;letter-spacing:-.005em}
 .btn-line{background:var(--card2);border:1px solid var(--line2)}
 .btn:disabled{opacity:.35;pointer-events:none}
 .btn svg{width:18px;height:18px}
+.app.has-bar{padding-bottom:calc(170px + var(--safe-b))}
 .bar{position:fixed;left:0;right:0;bottom:calc(64px + var(--safe-b));z-index:35;padding:10px 16px;background:linear-gradient(180deg,transparent,var(--bg) 35%);max-width:520px;margin:0 auto}
 /* wizard */
 .prog{display:flex;gap:5px;margin-top:14px}
@@ -126,9 +128,9 @@ h3{font-size:15px;font-weight:800;letter-spacing:-.005em}
 .svc i{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:24px;font-style:normal;background:var(--card2)}
 .svc b{font-size:16px}
 .svc p{font-size:13px;color:var(--muted);margin-top:3px}
-.days{display:flex;gap:8px;margin-top:14px;overflow-x:auto;scrollbar-width:none}
+.days{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}
 .days::-webkit-scrollbar{display:none}
-.day{flex:none;width:76px;padding:10px 0;border-radius:16px;background:var(--card);border:1.5px solid var(--line);text-align:center}
+.day{padding:10px 0;border-radius:16px;background:var(--card);border:1.5px solid var(--line);text-align:center}
 .day b{display:block;font-size:20px;font-weight:800}
 .day span{font-size:11.5px;color:var(--muted);font-weight:800}
 .day.on{border-color:var(--red);background:var(--redbg)}
@@ -168,7 +170,7 @@ h3{font-size:15px;font-weight:800;letter-spacing:-.005em}
 .notif .top i{width:20px;height:20px;border-radius:6px;background:url(assets/avatar.jpg) center/cover}
 .notif b{display:block;margin-top:6px;font-size:15px}
 .notif p{font-size:13.5px;color:var(--text2);margin-top:4px}
-.notif a{color:#6ab0ff;font-weight:800;text-decoration:none}
+.notif a{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;margin-top:6px;border-radius:10px;background:rgba(106,176,255,.12);color:#6ab0ff;font-weight:800;text-decoration:none}
 .stars{display:flex;gap:6px;margin-top:10px}
 .stars button{font-size:28px;filter:grayscale(1) opacity(.4);transition:.15s}
 .stars button.on{filter:none;transform:scale(1.1)}
@@ -206,8 +208,8 @@ h3{font-size:15px;font-weight:800;letter-spacing:-.005em}
 /* sheet */
 .scrim{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .25s}
 .scrim.on{opacity:1;pointer-events:auto}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:520px;margin:0 auto;background:var(--bg2);border-radius:24px 24px 0 0;border-top:1px solid var(--line2);padding:10px 18px calc(20px + var(--safe-b));transform:translateY(105%);transition:transform .35s cubic-bezier(.2,.8,.2,1)}
-.sheet.on{transform:none}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:61;max-width:520px;margin:0 auto;background:var(--bg2);border-radius:24px 24px 0 0;border-top:1px solid var(--line2);padding:10px 18px calc(20px + var(--safe-b));transform:translateY(110%);visibility:hidden;transition:transform .35s cubic-bezier(.2,.8,.2,1),visibility 0s .35s}
+.sheet.on{transform:none;visibility:visible;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 .sheet .grab{width:40px;height:5px;border-radius:3px;background:var(--card3);margin:0 auto 14px}
 .sheet h3{font-size:18px}
 .range{width:100%;margin:22px 0 6px;accent-color:var(--red);height:28px}
@@ -252,7 +254,7 @@ h3{font-size:15px;font-weight:800;letter-spacing:-.005em}
 .sbox svg{position:absolute;left:16px;top:50%;width:18px;height:18px;transform:translateY(-50%);color:var(--muted)}
 .sstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
 .empty{text-align:center;color:var(--muted);padding:40px 10px;font-size:14px}
-.toast{position:fixed;left:50%;top:14px;transform:translate(-50%,-140%);z-index:80;background:#f4f4f5;color:#0b0b0d;font-weight:800;font-size:13.5px;padding:11px 16px;border-radius:14px;box-shadow:0 14px 30px -10px #000;transition:transform .35s cubic-bezier(.2,.8,.2,1);max-width:calc(100vw - 32px);display:flex;gap:8px;align-items:center}
+.toast{pointer-events:none;position:fixed;left:50%;top:14px;transform:translate(-50%,-140%);z-index:80;background:#f4f4f5;color:#0b0b0d;font-weight:800;font-size:13.5px;padding:11px 16px;border-radius:14px;box-shadow:0 14px 30px -10px #000;transition:transform .35s cubic-bezier(.2,.8,.2,1);max-width:calc(100vw - 32px);display:flex;gap:8px;align-items:center}
 .toast.on{transform:translate(-50%,0)}
 .toast i{width:8px;height:8px;border-radius:50%;background:var(--good);flex:none}
 .confetti{position:fixed;inset:0;pointer-events:none;z-index:90;overflow:hidden}
@@ -260,6 +262,7 @@ h3{font-size:15px;font-weight:800;letter-spacing:-.005em}
 @keyframes fall{to{transform:translateY(105vh) rotate(720deg);opacity:.6}}
 .next{margin-top:18px}
 .foot{margin-top:24px;text-align:center;font-size:11.5px;color:var(--dim)}
+@media (max-width:359px){.hd b{font-size:13px}.hd span{font-size:11.5px}.tag{padding:3px 7px;font-size:10px}.acts .btn{font-size:13px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -362,6 +365,7 @@ function closeSheet() { $("#sheet").classList.remove("on"); $("#scrim").classLis
 $("#scrim").onclick = () => backFn ? backFn() : closeSheet();
 function bar(label, fn, enabled = true) {
   const b = $("#bar"), btn = $("#barBtn");
+  $(".app").classList.toggle("has-bar", !!label);
   if (!label) { b.hidden = true; return; }
   b.hidden = false; btn.textContent = label; btn.disabled = !enabled; btn.onclick = () => { hap("medium"); fn(); };
 }
@@ -490,7 +494,7 @@ function renderSell() {
     const b = D.brands.find(x => x.b === W.brand);
     V.innerHTML = `${wizHead(2, "Model", "Tugmalar — kanalda eng ko‘p chiqqan modellar")}
       <div class="chips">${b.models.map(m => `<button class="chip${W.model === m ? " on" : ""}" data-m="${esc(m)}">${esc(m)}</button>`).join("")}</div>
-      <div class="field"><label>Yoki o‘zingiz yozing</label><input id="mIn" placeholder="masalan, GLE 450 Coupe" value="${esc(W.model || "")}" autocomplete="off"></div>`;
+      <div class="field"><label>Yoki o‘zingiz yozing</label><input id="mIn" maxlength="40" placeholder="masalan, GLE 450 Coupe" value="${esc(W.model || "")}" autocomplete="off"></div>`;
     const ok = () => bar("Davom etish", () => { W.step = 2; renderSell(); }, !!W.model);
     $$("[data-m]", V).forEach(x => x.onclick = () => { hap("sel"); W.model = x.dataset.m; $("#mIn").value = W.model; $$("[data-m]", V).forEach(c => c.classList.toggle("on", c === x)); ok(); });
     $("#mIn").oninput = e => { W.model = e.target.value.trim().toUpperCase(); $$("[data-m]", V).forEach(c => c.classList.toggle("on", c.dataset.m === W.model)); ok(); };
@@ -549,6 +553,8 @@ function renderSell() {
   }
   if (W.step === 7) renderDone();
 }
+// «Mercedes» + «GLE 450», но не «Mercedes MERCEDES-AMG GLE»: если марка уже в модели — не дублируем
+const carName = () => W.brand === "Xitoy" || norm(W.model).startsWith(norm(W.brand).slice(0, 4)) ? W.model : `${W.brand} ${W.model}`;
 function setPhone(p) { W.phone = p.replace(/\D/g, "").slice(-9); showHist(); }
 async function hash(p) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("ih-demo-2026" + p));
@@ -568,7 +574,7 @@ async function showHist() {
   hap("ok");
 }
 function pay() {
-  const name = `${W.brand === "Xitoy" ? "" : W.brand + " "}${W.model}`;
+  const name = carName();
   sheet(`<h3>To‘lov</h3><p class="sub" style="margin-top:4px">${esc(name)} · ${esc(W.slot())}</p>
     <div class="paybtns"><button class="payb" data-p="Payme">Payme <small>karta orqali</small></button><button class="payb" data-p="Click">Click <small>karta orqali</small></button><button class="payb" data-p="admin">Admin bilan kelishaman <small>naqd</small></button></div>
     <p class="sub" style="margin-top:12px;font-size:12.5px">Summa — sizning tarifingiz bo‘yicha, admin panelda o‘zgartiriladi. To‘lov faqat rasmiy tizim orqali — firibgarlar admin nomidan pul so‘ray olmaydi.</p>`, el => {
@@ -582,7 +588,7 @@ function pay() {
 }
 function renderDone() {
   const V = $("#v-sell"); bar(null); setBack(null);
-  const name = `${W.brand === "Xitoy" ? "" : W.brand + " "}${W.model}`;
+  const name = carName();
   const paid = W.pay !== "admin";
   V.innerHTML = `<div class="ok-anim"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"/></svg></div>
     <h2 style="text-align:center;margin-top:12px">Yozildingiz!</h2><p class="sub" style="text-align:center">Barcha ma’lumotlar adminga o‘zi ketdi</p>
@@ -608,7 +614,7 @@ function renderDone() {
       const k = (W.model || "").replace(/[^A-Z0-9]/gi, "").toUpperCase();
       const R = (await loadIdx().catch(() => ({ rows: [] }))).rows.filter(x => x.th);
       const r = R.find(x => norm(x.t).includes(k)) || R.find(x => x.b === W.brand) || R[0] || { id: D.hall[0].id, m: D.hall[0].m, t: D.hall[0].t };
-      html = `<div class="notif"><div class="top"><i></i>Inomarka Hayda · hozir</div><div class="row" style="margin-top:8px"><div style="width:64px;height:64px;border-radius:50%;background:url(${thumb(r.id)}) center/cover;flex:none"></div><div><b style="margin-top:0">📢 Videongiz chiqdi!</b><p><a href="#" data-link="${post(r.m)}">Telegram kanalda ko‘rish →</a></p></div></div><p style="font-size:12px;color:var(--muted);margin-top:8px">Demo: havola kanalingizdagi o‘xshash mashinaning haqiqiy postiga olib boradi — ${esc(r.t)}</p></div>${tipH("Bot kanaldagi postni telefon raqami bo‘yicha o‘zi topadi va sotuvchiga yuboradi.")}`;
+      html = `<div class="notif"><div class="top"><i></i>Inomarka Hayda · hozir</div><div class="row" style="margin-top:8px"><div style="width:64px;height:64px;border-radius:50%;background:url(${thumb(r.id)}) center/cover;flex:none"></div><div><b style="margin-top:0">📢 Videongiz chiqdi!</b><p><a href="#" data-link="${post(r.m)}">Kanalda ko‘rish →</a></p></div></div><p style="font-size:12px;color:var(--muted);margin-top:8px">Demo: havola kanalingizdagi o‘xshash mashinaning haqiqiy postiga olib boradi — ${esc(r.t)}</p></div>${tipH("Bot kanaldagi postni telefon raqami bo‘yicha o‘zi topadi va sotuvchiga yuboradi.")}`;
     }
     if (f === "sold") { html = `<div class="notif"><div class="top"><i></i>Inomarka Hayda · hozir</div><b>🤝 Baraka bo‘ldi! Tabriklaymiz!</b><p>Kanal va Instagramdagi post avtomatik «BARAKA BO‘LDI» ga o‘zgardi. Xizmatni baholang:</p><div class="stars">${[1, 2, 3, 4, 5].map(i => `<button data-st="${i}">⭐️</button>`).join("")}</div></div>${tipH(`Hozir buni qo‘lda qilasiz — ${num(S.edited)} ta tahrir. Bot bilan — bitta tugma.`)}<div class="next"><button class="btn btn-line" data-go="own">Keyingi: zaldagi mashina egasi →</button></div>`; confetti(); hap("ok"); }
     b.insertAdjacentHTML("afterend", `<div>${html}</div>`); b.disabled = true;
@@ -660,7 +666,7 @@ function renderOwn() {
           <div class="fun">${fun.map(([l, n]) => `<div class="fr"><span>${l}</span><div><div class="b" style="width:${n / mx * 100}%"></div></div><span class="v">${n}</span></div>`).join("")}</div>
         </div>
         <div class="card" style="background:var(--card2)">
-          <div class="between"><b style="font-size:14px">💬 Eng yaxshi taklif</b><b style="font-size:20px">${st.offer ? money(st.offer) : "hali yo‘q"}</b></div>
+          <div class="between"><b style="font-size:14px">💬 Eng yaxshi taklif</b><b style="font-size:20px;white-space:nowrap">${st.offer ? money(st.offer) : "hali yo‘q"}</b></div>
           ${st.offer ? `<div class="sub" style="margin-top:4px">Sizning narxingizdan ${Math.round((1 - st.offer / price) * 100)}% past</div>` : ""}
         </div>
         <div class="acts">
